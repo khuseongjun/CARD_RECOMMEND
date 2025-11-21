@@ -1,5 +1,5 @@
-name: card_proto
-description: 카드 혜택 추천 앱
+name: card_buddy
+description: 카드버디 - 카드 혜택 관리 앱
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -10,41 +10,40 @@ dependencies:
   flutter:
     sdk: flutter
   
-  # UI
-  cupertino_icons: ^1.0.6
-  google_fonts: ^6.1.0
+  # 상태 관리
+  provider: ^6.1.1
   
-  # 상태관리
-  flutter_riverpod: ^2.4.9
-  
-  # 네트워킹
+  # HTTP 클라이언트
+  http: ^1.1.0
   dio: ^5.4.0
   
-  # 위치
-  geolocator: ^11.0.0
-  permission_handler: ^11.1.0
+  # 위치 서비스
+  geolocator: ^14.0.2
+  permission_handler: ^12.0.1
+  
+  # UI
+  flutter_svg: ^2.0.9
+  cached_network_image: ^3.3.0
+  intl: ^0.20.2
+  google_fonts: ^6.1.0
+  shimmer: ^3.0.0
+  flutter_animate: ^4.5.0
+  lottie: ^3.0.0
   
   # 로컬 저장소
   shared_preferences: ^2.2.2
   
   # 유틸리티
-  intl: ^0.19.0
-  cached_network_image: ^3.3.1
-  
-  # 애니메이션
-  flip_card: ^0.7.0
-  
-  # 스켈레톤 로딩
-  shimmer: ^3.0.0
+  uuid: ^4.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
   
   assets:
-    - lib/utils/sample_icon.png
+    - 카드.png
 

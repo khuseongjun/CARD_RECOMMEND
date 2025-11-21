@@ -1,34 +1,32 @@
-/// 메인 엔트리 포인트
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'config/app_theme.dart';
-import 'providers/auth_provider.dart';
-import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'theme/colors.dart';
+import 'screens/main_navigation.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  runApp(
-    const ProviderScope(
-      child: CardProtoApp(),
-    ),
-  );
+  await initializeDateFormatting('ko');
+  runApp(const MyApp());
 }
 
-class CardProtoApp extends ConsumerWidget {
-  const CardProtoApp({Key? key}) : super(key: key);
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authProvider);
-
+  Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Card Proto',
+      title: 'CardBuddy',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: authState.isAuthenticated ? const HomeScreen() : const LoginScreen(),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primaryBlue,
+          primary: AppColors.primaryBlue,
+        ),
+        scaffoldBackgroundColor: AppColors.background,
+        useMaterial3: true,
+        fontFamily: 'Pretendard', // 토스 스타일 폰트
+      ),
+      home: const MainNavigation(),
     );
   }
 }
-

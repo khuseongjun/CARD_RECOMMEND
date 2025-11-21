@@ -1,173 +1,197 @@
-"""Pydantic 스키마 정의"""
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
-from datetime import date
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List, Dict, Any
+from datetime import datetime
 
-
-# 카드 스키마
-class CardBase(BaseModel):
-    issuer: str
+# User Schemas
+class UserBase(BaseModel):
     name: str
-    annual_fee_text: Optional[str] = None
-    min_spend_text: Optional[str] = None
-    image_url: Optional[str] = None
+    email: EmailStr
+    preferred_benefit_type: Optional[str] = None
+    representative_badge_id: Optional[str] = None
 
-
-class CardCreate(CardBase):
+class UserCreate(UserBase):
     pass
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    preferred_benefit_type: Optional[str] = None
+    representative_badge_id: Optional[str] = None
 
-class CardResponse(CardBase):
-    card_id: int
+class UserResponse(UserBase):
+    id: str
+    created_at: datetime
+    updated_at: datetime
     
     class Config:
         from_attributes = True
 
+# Card Product Schemas
+class CardProductBase(BaseModel):
+    name: str
+    issuer: str
+    card_type: List[str]
+    benefit_types: List[str]
+    annual_fee_domestic: int
+    annual_fee_international: int
+    min_monthly_spending: int
+    image_url: Optional[str] = None
 
-# 혜택 스키마
-class BenefitScopeResponse(BaseModel):
-    scope_type: str
-    scope_value: str
-    include: bool
+class CardProductCreate(CardProductBase):
+    id: str
+
+class CardProductResponse(CardProductBase):
+    id: str
     
     class Config:
         from_attributes = True
 
+# Card Performance Tier Schemas
+class TierInfo(BaseModel):
+    code: str
+    label: str
+    min_amount: int
+    max_amount: Optional[int] = None
 
-class TimeWindowResponse(BaseModel):
-    start_time: str
-    end_time: str
-    days_of_week: Optional[str] = None
-    
-    class Config:
-        from_attributes = True
+class CardPerformanceTierResponse(BaseModel):
+    card_id: str
+    tiers: List[TierInfo]
 
+# Card Benefit Schemas
+class MonthlyLimitBySpending(BaseModel):
+    spending_min: int
+    spending_max: Optional[int] = None
+    limit: int
 
-class BenefitResponse(BaseModel):
-    benefit_id: int
-    card_id: int
+class TimeCondition(BaseModel):
+    start: str
+    end: str
+
+class CardBenefitBase(BaseModel):
+    category: str
     title: str
-    short_desc: Optional[str] = None
-    benefit_type: Optional[str] = None
-    rate_pct: Optional[float] = None
-    flat_amount: Optional[int] = None
-    per_txn_amount_cap: Optional[int] = None
-    per_txn_discount_cap: Optional[int] = None
-    per_day: Optional[int] = None
-    per_month: Optional[int] = None
-    group_key: Optional[str] = None
-    priority: int
-    scopes: List[BenefitScopeResponse] = []
-    time_windows: List[TimeWindowResponse] = []
+    short_description: Optional[str] = None
+    benefit_type: str
+    rate: Optional[float] = None
+    time_condition: Optional[TimeCondition] = None
+    monthly_limit_by_spending: Optional[List[MonthlyLimitBySpending]] = None
+    raw_description: Optional[str] = None
+
+class CardBenefitCreate(CardBenefitBase):
+    id: str
+    card_id: str
+
+class CardBenefitResponse(CardBenefitBase):
+    id: str
+    card_id: str
     
     class Config:
         from_attributes = True
 
-
-class CardDetailResponse(CardResponse):
-    benefits: List[BenefitResponse] = []
-
-
-# 장소 검색 스키마
-class PlaceResponse(BaseModel):
-    place_id: str = Field(alias="id")
-    place_name: str
-    category_name: str
-    category_group_code: Optional[str] = None
-    category_group_name: Optional[str] = None
-    phone: Optional[str] = None
-    address_name: str
-    road_address_name: Optional[str] = None
-    x: str  # longitude
-    y: str  # latitude
-    distance: Optional[str] = None
-    
-    class Config:
-        populate_by_name = True
-
-
-class PlacesNearbyRequest(BaseModel):
-    lat: float = Field(..., ge=-90, le=90)
-    lng: float = Field(..., ge=-180, le=180)
-    radius: int = Field(default=120, ge=10, le=500)
-
-
-class PlacesNearbyResponse(BaseModel):
-    places: List[PlaceResponse]
-    total_count: int
-
-
-# 추천 스키마
-class RecommendRequest(BaseModel):
-    user_id: int
-    merchant_category: str
-    merchant_name: Optional[str] = None
-    amount: int = Field(default=10000, ge=1000)
-    timestamp: str
-    lat: Optional[float] = None
-    lng: Optional[float] = None
-
-
-class RecommendationResponse(BaseModel):
-    card_id: int
-    card_name: str
-    card_issuer: str
-    card_image_url: Optional[str] = None
-    benefit_title: str
-    benefit_desc: str
-    expected_saving: int
-    discount_rate: Optional[float] = None
-    conditions: List[str] = []
-    priority: int
-
-
-class RecommendResponseList(BaseModel):
-    recommendations: List[RecommendationResponse]
-    merchant_name: Optional[str] = None
-    merchant_category: str
-
-
-# 사용자 스키마
-class UserRegister(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50)
-    email: EmailStr
-    nickname: str = Field(..., min_length=2, max_length=50)
-    password: str = Field(..., min_length=6)
-
-
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-
-class UserResponse(BaseModel):
-    user_id: int
-    username: str
-    email: str
-    nickname: str
-    created_at: Optional[str] = None
-    
-    class Config:
-        from_attributes = True
-
-
-class UserCardRegister(BaseModel):
-    card_id: int
-
+# User Card Schemas
+class UserCardCreate(BaseModel):
+    card_id: str
+    nickname: Optional[str] = None
 
 class UserCardResponse(BaseModel):
-    user_card_id: int
-    user_id: int
-    card_id: int
-    registered_at: Optional[str] = None
+    id: int
+    user_id: str
+    card_id: str
+    nickname: Optional[str] = None
+    registered_at: datetime
+    card: Optional[CardProductResponse] = None
     
     class Config:
         from_attributes = True
 
+# Transaction Schemas
+class TransactionCreate(BaseModel):
+    merchant_name: str
+    merchant_category: str
+    amount: int
+    approved_at: datetime
+    is_offline_card: bool = False
+    is_cancelled: bool = False
 
-# 인증 토큰 (간단한 구현)
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    user: UserResponse
+class TransactionResponse(BaseModel):
+    id: str
+    user_id: str
+    card_id: str
+    merchant_name: str
+    merchant_category: str
+    amount: int
+    approved_at: datetime
+    is_offline_card: bool
+    is_cancelled: bool
+    
+    class Config:
+        from_attributes = True
+
+# Performance Schemas
+class PerformanceSummary(BaseModel):
+    current_spending: int
+    remaining_amount: int
+    current_tier: Optional[str] = None
+    next_tier: Optional[str] = None
+    tiers: List[TierInfo]
+
+class TransactionWithClassification(BaseModel):
+    id: str
+    merchant_name: str
+    approved_at: datetime
+    amount: int
+    is_counted_for_performance: bool
+    is_counted_for_benefit: bool
+    reason: Optional[str] = None
+    performance_amount: int
+
+class PerformanceResponse(BaseModel):
+    summary: PerformanceSummary
+    recognized: List[TransactionWithClassification]
+    excluded: List[TransactionWithClassification]
+
+# Benefit Schemas
+class BenefitSummaryResponse(BaseModel):
+    total_benefit: int
+    card_benefits: List[Dict[str, Any]]
+
+class BenefitRankResponse(BaseModel):
+    percentile: float
+    total_spending_1y: int
+    total_benefit_1y: int
+    discount_rate: float
+    average_discount_rate: float
+
+# Recommendation Schemas
+class CurrentRecommendationResponse(BaseModel):
+    card_id: str
+    card_name: str
+    merchant_name: str
+    benefit_description: str
+    expected_benefit: int
+
+class MissedBenefitResponse(BaseModel):
+    transaction_id: str
+    date: datetime
+    merchant_name: str
+    used_card_id: str
+    used_card_name: str
+    recommended_card_id: str
+    recommended_card_name: str
+    missed_amount: int
+
+# Badge Schemas
+class BadgeResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    icon_emoji: str
+    tier: str
+    condition_type: str
+    condition_value: Dict[str, Any]
+    is_earned: bool = False
+    earned_at: Optional[datetime] = None
+    progress: Optional[Dict[str, Any]] = None
+    
+    class Config:
+        from_attributes = True
 
