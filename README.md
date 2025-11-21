@@ -50,7 +50,7 @@ venv\Scripts\activate  # Windows
 pip install -r requirements.txt
 
 # 초기 데이터 삽입 (선택사항)
-python -m app.init_data
+python -m app.init_database
 
 # 서버 실행
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000

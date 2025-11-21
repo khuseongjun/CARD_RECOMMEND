@@ -1,0 +1,86 @@
+[
+    {
+        "id": "10344_cafe",
+        "card_id": "10344",
+        "category": "cafe",
+        "title": "커피 4대 브랜드통합 55% 청구할인",
+        "short_description": "스타벅스, 투썸플레이스, 커피빈, 폴바셋 55% 청구할인",
+        "benefit_type": "discount",
+        "rate": 0.55,
+        "previous_month_min_spending": 300000,
+        "monthly_usage_limit": null,
+        "monthly_discount_limit": 11000
+    },
+    {
+        "id": "10344_cvs",
+        "card_id": "10344",
+        "category": "cvs",
+        "title": "편의점 11% 청구할인",
+        "short_description": "편의점 업종 청구할인",
+        "benefit_type": "discount",
+        "rate": 0.11,
+        "previous_month_min_spending": 300000,
+        "monthly_usage_limit": null,
+        "monthly_discount_limit": 3300
+    },
+    {
+        "id": "10344_transport",
+        "card_id": "10344",
+        "category": "transport",
+        "title": "대중교통 33% 청구할인",
+        "short_description": "시내버스/지하철/택시 33% 청구할인",
+        "benefit_type": "discount",
+        "rate": 0.33,
+        "previous_month_min_spending": 300000,
+        "monthly_usage_limit": null,
+        "monthly_discount_limit": 5500
+    },
+    {
+        "id": "10344_movie",
+        "card_id": "10344",
+        "category": "movie",
+        "title": "영화관 청구할인",
+        "short_description": "건당 할인금액 5,500원, 통합 월 할인한도 5,500원",
+        "benefit_type": "discount",
+        "rate": null,
+        "previous_month_min_spending": 300000,
+        "monthly_usage_limit": null,
+        "monthly_discount_limit": 5500
+    },
+    {
+        "id": "1408_cafe",
+        "card_id": "1408",
+        "category": "cafe",
+        "title": "Night 커피전문점 10% 할인",
+        "short_description": "Night 커피전문점 업종 10% 할인 서비스",
+        "benefit_type": "discount",
+        "rate": 0.10,
+        "previous_month_min_spending": 300000,
+        "monthly_usage_limit": 10000,
+        "monthly_discount_limit": 1000
+    },
+    {
+        "id": "1408_cvs",
+        "card_id": "1408",
+        "category": "cvs",
+        "title": "All Day 편의점 10% 할인",
+        "short_description": "편의점 업종 10% 할인 서비스",
+        "benefit_type": "discount",
+        "rate": 0.10,
+        "previous_month_min_spending": 300000,
+        "monthly_usage_limit": 5000,
+        "monthly_discount_limit": 1000
+    },
+    {
+        "id": "1408_transport",
+        "card_id": "1408",
+        "category": "transport",
+        "title": "Night 택시 10% 할인",
+        "short_description": "택시 업종 10% 할인 서비스",
+        "benefit_type": "discount",
+        "rate": 0.10,
+        "previous_month_min_spending": 300000,
+        "monthly_usage_limit": 10000,
+        "monthly_discount_limit": 1000
+    }
+]

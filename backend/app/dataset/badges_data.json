@@ -1,0 +1,69 @@
+[
+    {
+        "id": "benefit_hunter",
+        "name": "혜택 헌터",
+        "description": "한 달 동안 10,000원 이상 혜택을 받았어요",
+        "icon_emoji": "🎯",
+        "tier": "Bronze",
+        "condition_type": "benefit_amount_monthly",
+        "condition_value": {
+            "min_amount": 10000
+        }
+    },
+    {
+        "id": "saving_master",
+        "name": "절약 마스터",
+        "description": "3개월 연속 5,000원 이상 혜택을 받았어요",
+        "icon_emoji": "💰",
+        "tier": "Silver",
+        "condition_type": "benefit_consecutive_months",
+        "condition_value": {
+            "min_amount": 5000,
+            "months": 3
+        }
+    },
+    {
+        "id": "card_collector",
+        "name": "카드 컬렉터",
+        "description": "5개 이상의 카드를 등록했어요",
+        "icon_emoji": "💳",
+        "tier": "Gold",
+        "condition_type": "card_count",
+        "condition_value": {
+            "min_count": 5
+        }
+    },
+    {
+        "id": "first_card",
+        "name": "첫 카드",
+        "description": "첫 번째 카드를 등록했어요",
+        "icon_emoji": "🎉",
+        "tier": "Bronze",
+        "condition_type": "card_count",
+        "condition_value": {
+            "min_count": 1
+        }
+    },
+    {
+        "id": "spending_master",
+        "name": "소비 마스터",
+        "description": "한 달에 100만원 이상 사용했어요",
+        "icon_emoji": "💸",
+        "tier": "Silver",
+        "condition_type": "monthly_spending",
+        "condition_value": {
+            "min_amount": 1000000
+        }
+    },
+    {
+        "id": "benefit_expert",
+        "name": "혜택 전문가",
+        "description": "한 달에 50,000원 이상 혜택을 받았어요",
+        "icon_emoji": "🏆",
+        "tier": "Gold",
+        "condition_type": "benefit_amount_monthly",
+        "condition_value": {
+            "min_amount": 50000
+        }
+    }
+]

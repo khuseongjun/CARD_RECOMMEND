@@ -1,0 +1,32 @@
+[
+    {
+        "id": "10344",
+        "name": "D4카드의정석Ⅱ",
+        "issuer": "우리",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 12000,
+        "annual_fee_international": 12000,
+        "min_monthly_spending": 300000,
+        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/WR/10344/WR_10344_20240402-103053_ver.png"
+    },
+    {
+        "id": "1408",
+        "name": "신한카드 Mr.Life",
+        "issuer": "신한",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 15000,
+        "annual_fee_international": 18000,
+        "min_monthly_spending": 300000,
+        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/SH/1408/SH_1408_20230213-143750_ver.png"
+    }
+]

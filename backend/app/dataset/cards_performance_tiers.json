@@ -1,0 +1,37 @@
+[
+    {
+        "card_id": "10344",
+        "tier_code": "T1",
+        "tier_label": "1구간",
+        "min_amount": 100000,
+        "max_amount": 299999
+    },
+    {
+        "card_id": "10344",
+        "tier_code": "T2",
+        "tier_label": "2구간",
+        "min_amount": 300000,
+        "max_amount": 499999
+    },
+    {
+        "card_id": "10344",
+        "tier_code": "T3",
+        "tier_label": "3구간",
+        "min_amount": 500000,
+        "max_amount": null
+    },
+    {
+        "card_id": "1408",
+        "tier_code": "T1",
+        "tier_label": "1구간",
+        "min_amount": 100000,
+        "max_amount": 299999
+    },
+    {
+        "card_id": "1408",
+        "tier_code": "T2",
+        "tier_label": "2구간",
+        "min_amount": 300000,
+        "max_amount": null
+    }
+]
