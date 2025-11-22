@@ -1,0 +1,92 @@
+[
+    {
+        "id": "10344",
+        "name": "D4카드의정석Ⅱ",
+        "issuer": "우리",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 12000,
+        "annual_fee_international": 12000,
+        "min_monthly_spending": 300000,
+        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/WR/10344/WR_10344_20240402-103053_ver.png"
+    },
+    {
+        "id": "1408",
+        "name": "신한카드 Mr.Life",
+        "issuer": "신한",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 15000,
+        "annual_fee_international": 18000,
+        "min_monthly_spending": 300000,
+        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/SH/1408/SH_1408_20230213-143750_ver.png"
+    },
+    {
+        "id": "10216",
+        "name": "KB국민 My WE:SH 카드",
+        "issuer": "KB국민",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 15000,
+        "annual_fee_international": 15000,
+        "min_monthly_spending": 400000,
+        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/KB/10216/KB_10216_20250801-081714_ver.png"
+    },
+    {
+        "id": "1530",
+        "name": "삼성카드 taptap O",
+        "issuer": "삼성",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 10000,
+        "annual_fee_international": 10000,
+        "min_monthly_spending": 300000,
+        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/SS/1530/SS_1530_20241101-100614_ver.png"
+    },
+    {
+        "id": "115",
+        "name": "KB국민 굿데이카드",
+        "issuer": "KB국민",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 5000,
+        "annual_fee_international": 10000,
+        "min_monthly_spending": 300000,
+        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/KB/115/KB_115_20230125-142026_hor.png"
+    },
+    {
+        "id": "10343",
+        "name": "삼성 iD GLOBAL 카드",
+        "issuer": "삼성",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 20000,
+        "annual_fee_international": 20000,
+        "min_monthly_spending": 500000,
+        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/SS/10343/SS_10343_20240329-110153_ver.png"
+    }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "tx_user_123_10344_0",
+    "user_id": "user_123",
+    "card_id": "10344",
+    "merchant_name": "스타벅스 강남점",
+    "merchant_category": "cafe",
+    "amount": 5800,
+    "approved_at": "2025-11-21T10:00:00",
+    "is_offline_card": false,
+    "is_cancelled": false
+  },
+  {
+    "id": "tx_user_123_10344_1",
+    "user_id": "user_123",
+    "card_id": "10344",
+    "merchant_name": "지하철 2호선",
+    "merchant_category": "transport",
+    "amount": 1350,
+    "approved_at": "2025-11-21T12:00:00",
+    "is_offline_card": true,
+    "is_cancelled": false
+  },
+  {
+    "id": "tx_user_123_10344_2",
+    "user_id": "user_123",
+    "card_id": "10344",
+    "merchant_name": "CU편의점",
+    "merchant_category": "cvs",
+    "amount": 8500,
+    "approved_at": "2025-11-20T10:00:00",
+    "is_offline_card": true,
+    "is_cancelled": false
+  },
+  {
+    "id": "tx_user_123_10344_3",
+    "user_id": "user_123",
+    "card_id": "10344",
+    "merchant_name": "CGV 강남",
+    "merchant_category": "movie",
+    "amount": 15000,
+    "approved_at": "2025-11-20T12:00:00",
+    "is_offline_card": false,
+    "is_cancelled": false
+  },
+  {
+    "id": "tx_user_123_1408_0",
+    "user_id": "user_123",
+    "card_id": "1408",
+    "merchant_name": "스타벅스 삼성점",
+    "merchant_category": "cafe",
+    "amount": 6000,
+    "approved_at": "2025-11-21T11:00:00",
+    "is_offline_card": false,
+    "is_cancelled": false
+  },
+  {
+    "id": "tx_user_123_1408_1",
+    "user_id": "user_123",
+    "card_id": "1408",
+    "merchant_name": "버스 146번",
+    "merchant_category": "transport",
+    "amount": 1400,
+    "approved_at": "2025-11-21T13:00:00",
+    "is_offline_card": true,
+    "is_cancelled": false
+  },
+  {
+    "id": "tx_user_123_1408_2",
+    "user_id": "user_123",
+    "card_id": "1408",
+    "merchant_name": "GS25 역삼점",
+    "merchant_category": "cvs",
+    "amount": 6500,
+    "approved_at": "2025-11-20T11:00:00",
+    "is_offline_card": true,
+    "is_cancelled": false
+  },
+  {
+    "id": "tx_user_123_1408_3",
+    "user_id": "user_123",
+    "card_id": "1408",
+    "merchant_name": "CGV 삼성점",
+    "merchant_category": "movie",
+    "amount": 18000,
+    "approved_at": "2025-11-20T13:00:00",
+    "is_offline_card": false,
+    "is_cancelled": false
+  }
+]
