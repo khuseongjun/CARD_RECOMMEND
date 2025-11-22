@@ -64,6 +64,7 @@ API 문서: http://localhost:8000/docs
 cd frontend
 
 # 의존성 설치
+flutter clean
 flutter pub get
 
 # 앱 실행
