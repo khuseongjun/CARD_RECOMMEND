@@ -64,7 +64,7 @@ def set_representative_badge(
     
     return {"message": "Representative badge updated", "badge_id": badge_id}
 
-@router.get("/badges/{badge_id}", response_model=BadgeResponse)
+@router.get("/{badge_id}", response_model=BadgeResponse)
 def get_badge_detail(badge_id: str, user_id: str, db: Session = Depends(get_db)):
     badge = db.query(Badge).filter(Badge.id == badge_id).first()
     if not badge:

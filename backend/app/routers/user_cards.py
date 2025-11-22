@@ -5,9 +5,9 @@ from app.models import CardProduct, UserCard
 from app.schemas import UserCardResponse, UserCardCreate
 from typing import List
 
-router = APIRouter(tags=["user_cards"])
+router = APIRouter(prefix="/users/{user_id}/cards", tags=["user_cards"])
 
-@router.get("/users/{user_id}/cards", response_model=List[UserCardResponse])
+@router.get("", response_model=List[UserCardResponse])
 def get_user_cards(user_id: str, db: Session = Depends(get_db)):
     user_cards = db.query(UserCard).filter(UserCard.user_id == user_id).all()
     result = []
@@ -24,7 +24,7 @@ def get_user_cards(user_id: str, db: Session = Depends(get_db)):
         result.append(UserCardResponse(**uc_dict))
     return result
 
-@router.post("/users/{user_id}/cards", response_model=UserCardResponse)
+@router.post("", response_model=UserCardResponse)
 def add_user_card(user_id: str, card_data: UserCardCreate, db: Session = Depends(get_db)):
     # 카드 존재 확인
     card = db.query(CardProduct).filter(CardProduct.id == card_data.card_id).first()
@@ -57,7 +57,7 @@ def add_user_card(user_id: str, card_data: UserCardCreate, db: Session = Depends
         card=card
     )
 
-@router.delete("/users/{user_id}/cards/{card_id}")
+@router.delete("/{card_id}")
 def delete_user_card(user_id: str, card_id: str, db: Session = Depends(get_db)):
     user_card = db.query(UserCard).filter(
         UserCard.user_id == user_id,

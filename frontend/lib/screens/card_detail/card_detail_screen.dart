@@ -154,10 +154,55 @@ class _CardDetailScreenState extends State<CardDetailScreen> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              child: Image.asset(
-                '카드.png',
-                fit: BoxFit.cover,
-              ),
+              child: _card?.imageUrl != null && _card!.imageUrl!.isNotEmpty
+                  ? Image.network(
+                      'http://127.0.0.1:8000${_card!.imageUrl}',
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [AppColors.grey100, AppColors.grey200],
+                            ),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: AppColors.primaryGradient,
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.credit_card,
+                              size: 64,
+                              color: Colors.white.withOpacity(0.7),
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.credit_card,
+                          size: 64,
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                      ),
+                    ),
             ),
           ).animate()
             .fadeIn(duration: 500.ms, curve: Curves.easeOut)

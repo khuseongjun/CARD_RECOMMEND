@@ -17,9 +17,10 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
+  final GlobalKey<HomeScreenState> _homeScreenKey = GlobalKey<HomeScreenState>();
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
+  List<Widget> get _screens => [
+    HomeScreen(key: _homeScreenKey),
     const CardManageScreen(),
     const BenefitManageScreen(),
     const BadgeManageScreen(),
@@ -93,6 +94,10 @@ class _MainNavigationState extends State<MainNavigation> {
           setState(() {
             _currentIndex = index;
           });
+          // 홈 화면으로 돌아올 때 새로고침
+          if (index == 0 && _homeScreenKey.currentState != null) {
+            _homeScreenKey.currentState!.refresh();
+          }
         }
       },
       behavior: HitTestBehavior.opaque,
@@ -104,18 +109,27 @@ class _MainNavigationState extends State<MainNavigation> {
             AnimatedContainer(
               duration: 200.ms,
               curve: Curves.easeOut,
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryBlueLight : Colors.transparent,
+                gradient: isSelected ? AppColors.primaryGradient : null,
+                color: !isSelected ? Colors.transparent : null,
                 borderRadius: BorderRadius.circular(12),
+                boxShadow: isSelected ? [
+                  BoxShadow(
+                    color: AppColors.primaryBlue.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                    spreadRadius: -2,
+                  ),
+                ] : null,
               ),
               child: Icon(
                 isSelected ? activeIcon : icon,
-                color: isSelected ? AppColors.primaryBlue : AppColors.grey500,
+                color: isSelected ? Colors.white : AppColors.grey500,
                 size: 24,
               ),
             ).animate(target: isSelected ? 1 : 0)
-              .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 200.ms),
+              .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 200.ms, curve: Curves.elasticOut),
             const SizedBox(height: 4),
             Text(
               label,

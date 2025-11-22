@@ -195,3 +195,34 @@ class BadgeResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# Place Schemas
+class PlaceResponse(BaseModel):
+    id: str
+    name: str
+    category: str
+    kakao_category: str
+    address: str
+    road_address: Optional[str] = None
+    phone: Optional[str] = None
+    lat: float
+    lng: float
+    distance: int  # 미터 단위
+    place_url: Optional[str] = None
+
+# Recommend Schemas
+class RecommendRequest(BaseModel):
+    merchant_category: str
+    amount: int
+    timestamp: datetime
+    user_cards: List[str] = []
+
+class RecommendResponse(BaseModel):
+    card_id: str
+    card_name: str
+    merchant_name: str
+    merchant_category: str
+    benefit_description: str
+    expected_benefit: int
+    benefit_rate: Optional[float] = None
+    conditions: Optional[str] = None  # "전월실적·월 한도 충족 시 적용 / 야간 21–09" 등
+

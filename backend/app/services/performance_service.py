@@ -71,18 +71,18 @@ def get_performance_summary(
                 next_tier = tier_data.tier_code
     
     # 남은 금액 계산
-    if next_tier:
-        next_tier_data = next((t for t in tiers_data if t.tier_code == next_tier), None)
-        if next_tier_data:
-            remaining_amount = next_tier_data.min_amount - current_spending
-        else:
-            remaining_amount = 0
+    # 프론트엔드에서는 전체 목표(마지막 티어의 minAmount)까지의 남은 금액을 표시함
+    if tiers_data:
+        # 마지막 티어의 minAmount를 전체 목표로 사용
+        last_tier = tiers_data[-1]
+        target_amount = last_tier.min_amount
+        remaining_amount = max(0, target_amount - current_spending)
     else:
         remaining_amount = 0
     
     summary = PerformanceSummary(
         current_spending=current_spending,
-        remaining_amount=max(remaining_amount, 0),
+        remaining_amount=remaining_amount,  # 이미 max(0, ...)로 계산됨
         current_tier=current_tier,
         next_tier=next_tier,
         tiers=tiers

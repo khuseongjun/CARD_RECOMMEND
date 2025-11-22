@@ -84,4 +84,35 @@ class AppColors {
   static const Color shadowLight = Color(0x0A000000);
   static const Color shadowMedium = Color(0x14000000);
   static const Color shadowDark = Color(0x1F000000);
+  
+  // Gradient Colors (그라데이션용)
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [Color(0xFF3182F6), Color(0xFF1B64DA)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const LinearGradient successGradient = LinearGradient(
+    colors: [Color(0xFF14B896), Color(0xFF0DA085)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const LinearGradient purpleGradient = LinearGradient(
+    colors: [Color(0xFF7F5AF0), Color(0xFF6B4DE0)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const LinearGradient orangeGradient = LinearGradient(
+    colors: [Color(0xFFFF6B00), Color(0xFFFF9500)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const LinearGradient cardGradient = LinearGradient(
+    colors: [Color(0xFFFFFFFF), Color(0xFFF9FAFB)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }

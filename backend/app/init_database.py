@@ -48,8 +48,10 @@ def init_database():
             if not existing_card:
                 db.add(CardProduct(**card_data))
             else:
+                # 모든 필드 업데이트 (image_url 포함)
                 for key, value in card_data.items():
-                    setattr(existing_card, key, value)
+                    if hasattr(existing_card, key):
+                        setattr(existing_card, key, value)
         db.commit()
         
         # ===== 카드 혜택 삽입 =====

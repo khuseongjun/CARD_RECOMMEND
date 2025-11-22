@@ -168,78 +168,190 @@ class _BenefitManageScreenState extends State<BenefitManageScreen>
             },
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.lg),
 
           // 월 선택
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left),
-                onPressed: () => _changeMonth(-1),
-              ),
-              Text(
-                DateFormat('yyyy년 M월').format(_selectedMonth),
-                style: AppTypography.h3,
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right),
-                onPressed: () => _changeMonth(1),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // 요약 카드
-          AppComponents.card(
-            backgroundColor: AppColors.primaryBlueLight,
-            child: Column(
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('💰', style: TextStyle(fontSize: 48)),
-                const SizedBox(height: 8),
-                Text(
-                  '이번 달 받은 혜택',
-                  style: AppTypography.body2,
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  onPressed: () => _changeMonth(-1),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  '${NumberFormat('#,###').format(_benefitSummary?['total_benefit'] ?? 0)}원',
-                  style: AppTypography.h1.copyWith(
-                    color: AppColors.primaryBlue,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  child: Text(
+                    DateFormat('yyyy년 M월').format(_selectedMonth),
+                    style: AppTypography.t3.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  '모든 카드에서 받은 혜택의 합계예요.\n(연회비, 기프트카드 제외)',
-                  style: AppTypography.caption,
-                  textAlign: TextAlign.center,
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  onPressed: () => _changeMonth(1),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.lg),
+
+          // 요약 카드 - 개선된 디자인
+          Container(
+            margin: EdgeInsets.zero,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryBlue.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                  spreadRadius: -4,
+                ),
+                BoxShadow(
+                  color: AppColors.shadowMedium,
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                  spreadRadius: -2,
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xl,
+                vertical: AppSpacing.xxl,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.25),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text('💰', style: TextStyle(fontSize: 36)),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    '이번 달 받은 혜택',
+                    style: AppTypography.body2.copyWith(
+                      color: Colors.white.withOpacity(0.95),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    '${NumberFormat('#,###').format(_benefitSummary?['total_benefit'] ?? 0)}원',
+                    style: AppTypography.h1.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 36,
+                      letterSpacing: -0.5,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs + 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      '모든 카드에서 받은 혜택의 합계예요',
+                      style: AppTypography.caption.copyWith(
+                        color: Colors.white.withOpacity(0.95),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ).animate().fadeIn(duration: 600.ms, curve: Curves.easeOut).scale(
+            begin: const Offset(0.95, 0.95),
+            duration: 600.ms,
+            curve: Curves.easeOut,
+          ),
+
+          const SizedBox(height: AppSpacing.lg),
 
           // 카드별 혜택 리스트
-          Text('카드별 혜택', style: AppTypography.h3),
-          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: Text(
+              '카드별 혜택',
+              style: AppTypography.t3.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
           if (_benefitSummary?['card_benefits'] != null)
-            ...(_benefitSummary!['card_benefits'] as List).map((cardBenefit) {
+            ...(_benefitSummary!['card_benefits'] as List).asMap().entries.map((entry) {
+              final index = entry.key;
+              final cardBenefit = entry.value;
               return AppComponents.card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   children: [
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 56,
+                      height: 56,
                       decoration: BoxDecoration(
-                        color: AppColors.grey200,
-                        borderRadius: BorderRadius.circular(8),
+                        gradient: AppColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryBlue.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                            spreadRadius: -1,
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.credit_card),
+                      child: const Icon(
+                        Icons.credit_card,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,17 +362,41 @@ class _BenefitManageScreenState extends State<BenefitManageScreen>
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '이달 혜택 ${NumberFormat('#,###').format(cardBenefit['benefit_amount'] ?? 0)}원',
-                            style: AppTypography.body2,
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.successLight,
+                                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                                ),
+                                child: Text(
+                                  '이달 혜택',
+                                  style: AppTypography.t7.copyWith(
+                                    color: AppColors.success,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${NumberFormat('#,###').format(cardBenefit['benefit_amount'] ?? 0)}원',
+                                style: AppTypography.body1.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.success,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
-              );
+              ).animate(delay: (index * 50).ms)
+                .fadeIn(duration: 400.ms)
+                .slideX(begin: 0.1, duration: 400.ms, curve: Curves.easeOut);
             }).toList(),
         ],
       ),

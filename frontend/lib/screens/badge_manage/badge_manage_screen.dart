@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../theme/components.dart';
@@ -83,26 +84,40 @@ class _BadgeManageScreenState extends State<BadgeManageScreen> {
                     child: Column(
                       children: [
                         if (goldBadges.isEmpty || representativeBadge == null)
-                          Column(
-                            children: [
-                              const Icon(
-                                Icons.lock_outline,
-                                size: 64,
-                                color: AppColors.textTertiary,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                '아직 대표로 설정한 뱃지가 없어요.',
-                                style: AppTypography.body1,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '골드 뱃지부터 대표로 설정할 수 있어요.',
-                                style: AppTypography.body2.copyWith(
-                                  color: AppColors.textSecondary,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                            child: Column(
+                              children: [
+                                Container(
+                                  width: 80,
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.grey100,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.lock_outline,
+                                    size: 40,
+                                    color: AppColors.textTertiary,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 16),
+                                Text(
+                                  '아직 대표로 설정한 뱃지가 없어요',
+                                  style: AppTypography.t4.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '골드 뱃지부터 대표로 설정할 수 있어요',
+                                  style: AppTypography.body2.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
                           )
                         else
                           Column(
@@ -113,12 +128,20 @@ class _BadgeManageScreenState extends State<BadgeManageScreen> {
                                   width: 120,
                                   height: 120,
                                   decoration: BoxDecoration(
-                                    color: AppColors.primaryBlueLight,
+                                    gradient: AppColors.primaryGradient,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: AppColors.primaryBlue,
-                                      width: 3,
+                                      color: Colors.white,
+                                      width: 4,
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.primaryBlue.withOpacity(0.3),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 8),
+                                        spreadRadius: -4,
+                                      ),
+                                    ],
                                   ),
                                   child: Center(
                                     child: Text(
@@ -126,7 +149,9 @@ class _BadgeManageScreenState extends State<BadgeManageScreen> {
                                       style: const TextStyle(fontSize: 48),
                                     ),
                                   ),
-                                ),
+                                ).animate()
+                                  .scale(delay: 100.ms, duration: 400.ms, curve: Curves.elasticOut)
+                                  .fadeIn(duration: 400.ms),
                               ),
                               const SizedBox(height: 16),
                               Text(

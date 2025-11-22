@@ -49,16 +49,23 @@ def calculate_benefit(
         
         # 시간 조건 확인
         if benefit.time_condition:
-            start_time = datetime.strptime(benefit.time_condition["start"], "%H:%M").time()
-            end_time = datetime.strptime(benefit.time_condition["end"], "%H:%M").time()
-            
-            # 시간 범위 체크 (예: 21:00 ~ 09:00 같은 경우)
-            if start_time > end_time:  # 자정을 넘는 경우
-                if not (transaction_time >= start_time or transaction_time <= end_time):
-                    continue
-            else:
-                if not (start_time <= transaction_time <= end_time):
-                    continue
+            # JSON 필드이므로 dict로 접근 가능 (SQLAlchemy가 자동 변환)
+            time_condition = benefit.time_condition if isinstance(benefit.time_condition, dict) else {}
+            if time_condition.get("start") and time_condition.get("end"):
+                try:
+                    start_time = datetime.strptime(time_condition["start"], "%H:%M").time()
+                    end_time = datetime.strptime(time_condition["end"], "%H:%M").time()
+                    
+                    # 시간 범위 체크 (예: 21:00 ~ 09:00 같은 경우)
+                    if start_time > end_time:  # 자정을 넘는 경우
+                        if not (transaction_time >= start_time or transaction_time <= end_time):
+                            continue
+                    else:
+                        if not (start_time <= transaction_time <= end_time):
+                            continue
+                except (ValueError, KeyError):
+                    # 시간 조건 파싱 실패 시 건너뛰기
+                    pass
         
         # 혜택 금액 계산
         if benefit.rate:
@@ -67,19 +74,23 @@ def calculate_benefit(
             base_benefit = 0
         
         # 월 한도 확인
-        if benefit.monthly_limit_by_spending:
-            monthly_limit = 0
-            for limit_rule in benefit.monthly_limit_by_spending:
-                if (limit_rule["spending_min"] <= current_month_spending and
-                    (limit_rule["spending_max"] is None or current_month_spending < limit_rule["spending_max"])):
-                    monthly_limit = limit_rule["limit"]
-                    break
-            
-            # 이미 사용한 한도 확인 (간단화: 실제로는 월별 집계 필요)
-            # 여기서는 base_benefit과 limit 중 작은 값 사용
-            benefit_amount = min(base_benefit, monthly_limit) if monthly_limit > 0 else base_benefit
-        else:
-            benefit_amount = base_benefit
+        # monthly_usage_limit: 월 최대 이용금액 (거래 금액 기준)
+        # monthly_discount_limit: 월 최대 할인금액 (혜택 금액 기준)
+        benefit_amount = base_benefit
+        
+        # 이용 금액 한도 체크
+        if benefit.monthly_usage_limit is not None:
+            # 이미 사용한 금액 확인 (간단화: 실제로는 월별 집계 필요)
+            # 여기서는 현재 거래 금액이 한도 이내인지만 확인
+            if transaction.amount > benefit.monthly_usage_limit:
+                # 거래 금액이 한도를 초과하면 혜택 제한
+                benefit_amount = int(benefit.monthly_usage_limit * benefit.rate) if benefit.rate else 0
+        
+        # 할인 금액 한도 체크
+        if benefit.monthly_discount_limit is not None:
+            # 혜택 금액이 월 할인 한도를 초과하지 않도록 제한
+            # 실제로는 월별 누적 할인 금액을 확인해야 하지만, 여기서는 단건 제한만 적용
+            benefit_amount = min(benefit_amount, benefit.monthly_discount_limit)
         
         if benefit_amount > 0:
             aggregation = BenefitAggregation(

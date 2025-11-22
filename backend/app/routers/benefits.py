@@ -33,6 +33,13 @@ def get_benefit_summary(
     
     transaction_ids = [tx.id for tx in transactions]
     
+    # 거래가 없는 경우
+    if not transaction_ids:
+        return BenefitSummaryResponse(
+            total_benefit=0,
+            card_benefits=[]
+        )
+    
     # 혜택 집계
     total_benefit = db.query(func.sum(BenefitAggregation.benefit_amount)).filter(
         BenefitAggregation.transaction_id.in_(transaction_ids)
@@ -85,6 +92,16 @@ def get_benefit_rank(
     
     transaction_ids = [tx.id for tx in transactions]
     total_spending = sum(tx.amount for tx in transactions)
+    
+    # 거래가 없는 경우
+    if not transaction_ids:
+        return BenefitRankResponse(
+            percentile=0,
+            total_spending_1y=0,
+            total_benefit_1y=0,
+            discount_rate=0,
+            average_discount_rate=1.3
+        )
     
     total_benefit = db.query(func.sum(BenefitAggregation.benefit_amount)).filter(
         BenefitAggregation.transaction_id.in_(transaction_ids)

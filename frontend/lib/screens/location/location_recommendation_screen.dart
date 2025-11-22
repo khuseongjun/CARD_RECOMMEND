@@ -1,10 +1,19 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../theme/colors.dart';
 import '../../theme/typography.dart';
 import '../../theme/spacing.dart';
 import '../../theme/components.dart';
+import '../../services/location_service.dart';
+import '../../services/place_service.dart';
+import '../../services/recommend_service.dart';
+import '../../models/place.dart';
+import '../../models/recommend.dart';
+import '../../models/user_card.dart';
+import '../../services/card_service.dart';
 import '../card_detail/card_detail_screen.dart';
 
 /// 위치 기반 카드 추천 화면
@@ -16,97 +25,167 @@ class LocationRecommendationScreen extends StatefulWidget {
 }
 
 class _LocationRecommendationScreenState extends State<LocationRecommendationScreen> {
-  bool _isLoading = true;
+  final LocationService _locationService = LocationService();
+  final PlaceService _placeService = PlaceService();
+  final RecommendService _recommendService = RecommendService();
+  final CardService _cardService = CardService();
   
-  // 하드코딩된 추천 데이터
-  final List<Map<String, dynamic>> _recommendations = [
-    {
-      'merchant': '스타벅스 강남역점',
-      'category': '카페',
-      'emoji': '☕️',
-      'distance': 120,
-      'cardName': 'KB국민 MR.Life',
-      'cardEmoji': '💳',
-      'benefit': '15% 할인',
-      'benefitDetail': '월 최대 5,000원',
-      'bgColor': AppColors.badgeTeal,
-      'accentColor': AppColors.accentTeal,
-    },
-    {
-      'merchant': '메가커피 테헤란로점',
-      'category': '카페',
-      'emoji': '☕️',
-      'distance': 85,
-      'cardName': '신한카드 Deep Dream',
-      'cardEmoji': '💳',
-      'benefit': '1,000원 할인',
-      'benefitDetail': '월 3회',
-      'bgColor': AppColors.badgeBlue,
-      'accentColor': AppColors.accentBlue,
-    },
-    {
-      'merchant': 'CGV 강남',
-      'category': '영화',
-      'emoji': '🎬',
-      'distance': 250,
-      'cardName': 'KB국민 MR.Life',
-      'cardEmoji': '💳',
-      'benefit': '영화 8,000원',
-      'benefitDetail': '월 2회',
-      'bgColor': AppColors.badgePurple,
-      'accentColor': AppColors.accentPurple,
-    },
-    {
-      'merchant': 'GS25 역삼점',
-      'category': '편의점',
-      'emoji': '🏪',
-      'distance': 50,
-      'cardName': '토스 체크카드',
-      'cardEmoji': '💳',
-      'benefit': '2% 적립',
-      'benefitDetail': '한도 없음',
-      'bgColor': AppColors.badgeOrange,
-      'accentColor': AppColors.accentOrange,
-    },
-    {
-      'merchant': '올리브영 강남중앙점',
-      'category': '뷰티',
-      'emoji': '💄',
-      'distance': 180,
-      'cardName': '신한카드 Deep Dream',
-      'cardEmoji': '💳',
-      'benefit': '10% 할인',
-      'benefitDetail': '월 최대 3,000원',
-      'bgColor': AppColors.badgePink,
-      'accentColor': AppColors.accentPink,
-    },
-    {
-      'merchant': '맥도날드 강남역점',
-      'category': '외식',
-      'emoji': '🍔',
-      'distance': 140,
-      'cardName': 'KB국민 MR.Life',
-      'cardEmoji': '💳',
-      'benefit': '20% 할인',
-      'benefitDetail': '월 최대 7,000원',
-      'bgColor': AppColors.badgeRed,
-      'accentColor': AppColors.error,
-    },
-  ];
-
+  bool _isLoading = true;
+  bool _locationPermissionDenied = false;
+  Position? _currentPosition;
+  String _locationName = '위치 정보 없음';
+  String _locationAddress = '';
+  List<PlaceWithRecommendation> _placesWithRecommendations = [];
+  List<UserCard> _userCards = [];
+  
   @override
   void initState() {
     super.initState();
     _loadData();
   }
-
+  
   Future<void> _loadData() async {
-    // 로딩 시뮬레이션
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      const userId = 'user_123';
+      
+      // 사용자 카드 로드
+      _userCards = await _cardService.getUserCards(userId);
+      
+      // 현재 위치 가져오기
+      _currentPosition = await _locationService.getCurrentLocation();
+      
+      if (_currentPosition == null) {
+        // 위치를 가져올 수 없으면 테스트용 위치 사용 (강남역)
+        if (mounted) {
+          setState(() {
+            _locationPermissionDenied = true;
+            // 강남역 좌표로 테스트
+            _currentPosition = Position(
+              latitude: 37.4980,
+              longitude: 127.0276,
+              timestamp: DateTime.now(),
+              accuracy: 10,
+              altitude: 0,
+              altitudeAccuracy: 0,
+              heading: 0,
+              headingAccuracy: 0,
+              speed: 0,
+              speedAccuracy: 0,
+            );
+            _locationName = '강남역 10번 출구';
+            _locationAddress = '서울특별시 강남구 역삼동';
+          });
+        }
+      } else {
+        // 실제 위치 정보 가져오기
+        if (mounted) {
+          setState(() {
+            _locationName = '현재 위치';
+            _locationAddress = '${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}';
+          });
+        }
+      }
+      
+      if (_currentPosition != null) {
+        // 주변 가맹점 검색
+        await _searchNearbyPlaces();
+      }
+    } catch (e) {
+      print('데이터 로드 실패: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+  
+  Future<void> _searchNearbyPlaces() async {
+    if (_currentPosition == null) return;
+    
+    try {
+      // 주변 가맹점 검색 (반경 200m)
+      List<Place> places = await _placeService.searchNearbyPlacesAll(
+        lat: _currentPosition!.latitude,
+        lng: _currentPosition!.longitude,
+        radius: 200,
+        sizePerCategory: 5,
+      );
+      
+      // 각 가맹점에 대한 혜택 추천 요청
+      _placesWithRecommendations = [];
+      for (Place place in places) {
+        RecommendResponse? recommendation = await _getRecommendationForPlace(place);
+        if (recommendation != null) {
+          _placesWithRecommendations.add(PlaceWithRecommendation(
+            place: place,
+            recommendation: recommendation,
+          ));
+        }
+      }
+      
+      // 혜택 금액 순으로 정렬
+      _placesWithRecommendations.sort((a, b) => 
+        b.recommendation.expectedBenefit.compareTo(a.recommendation.expectedBenefit)
+      );
+      
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      print('주변 가맹점 검색 실패: $e');
+    }
+  }
+  
+  Future<RecommendResponse?> _getRecommendationForPlace(Place place) async {
+    try {
+      const userId = 'user_123';
+      List<String> userCardIds = _userCards.map((uc) => uc.cardId).toList();
+      
+      if (userCardIds.isEmpty) {
+        return null;
+      }
+      
+      // 프리셋 금액
+      int amount = 10000;
+      
+      List<RecommendResponse> recommendations = await _recommendService.getRecommendations(
+        userId: userId,
+        merchantCategory: place.category,
+        merchantName: place.name,
+        amount: amount,
+        timestamp: DateTime.now(),
+        userCards: userCardIds,
+      );
+      
+      return recommendations.isNotEmpty ? recommendations.first : null;
+    } catch (e) {
+      print('혜택 추천 실패: ${place.name} - $e');
+      return null;
+    }
+  }
+  
+  String _getCategoryEmoji(String category) {
+    switch (category) {
+      case 'cafe':
+        return '☕️';
+      case 'food':
+      case 'restaurant':
+        return '🍽️';
+      case 'movie':
+      case 'culture':
+        return '🎬';
+      case 'convenience':
+        return '🏪';
+      case 'shopping':
+        return '🛍️';
+      default:
+        return '📍';
     }
   }
 
@@ -145,6 +224,37 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
   }
 
   Widget _buildContent() {
+    if (_locationPermissionDenied && _placesWithRecommendations.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.location_off,
+                size: 64,
+                color: AppColors.textTertiary,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                '위치 권한이 필요해요',
+                style: AppTypography.t3,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                '주변 혜택을 받으려면 위치 접근 권한을 허용해주세요.',
+                style: AppTypography.body2.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
     return RefreshIndicator(
       onRefresh: _loadData,
       child: CustomScrollView(
@@ -177,12 +287,12 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '강남역 10번 출구',
+                              _locationName,
                               style: AppTypography.t4,
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '서울특별시 강남구 역삼동',
+                              _locationAddress,
                               style: AppTypography.caption.copyWith(
                                 color: AppColors.textSecondary,
                               ),
@@ -217,7 +327,7 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
                         ),
                       ),
                       Text(
-                        '${_recommendations.length}곳',
+                        '${_placesWithRecommendations.length}곳',
                         style: AppTypography.body2.copyWith(
                           color: AppColors.primaryBlue,
                           fontWeight: FontWeight.bold,
@@ -239,21 +349,45 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
           ),
           
           // 추천 리스트
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final item = _recommendations[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                    child: _buildRecommendationCard(item, index),
-                  );
-                },
-                childCount: _recommendations.length,
+          if (_placesWithRecommendations.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.store_outlined,
+                      size: 64,
+                      color: AppColors.textTertiary,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      '주변 가맹점을 찾지 못했어요',
+                      style: AppTypography.body1.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final item = _placesWithRecommendations[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: _buildRecommendationCard(item, index),
+                    );
+                  },
+                  childCount: _placesWithRecommendations.length,
+                ),
               ),
             ),
-          ),
           
           // 하단 여백
           const SliverToBoxAdapter(
@@ -264,21 +398,16 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
     );
   }
 
-  Widget _buildRecommendationCard(Map<String, dynamic> item, int index) {
+  Widget _buildRecommendationCard(PlaceWithRecommendation item, int index) {
+    final place = item.place;
+    final recommendation = item.recommendation;
+    
     return GestureDetector(
       onTap: () {
-        // 카드 상세 화면으로 이동 (하드코딩된 카드 ID 사용)
-        String cardId = 'kb_mr_life'; // 기본값
-        if (item['cardName'].contains('신한')) {
-          cardId = 'shinhan_deep_dream';
-        } else if (item['cardName'].contains('토스')) {
-          cardId = 'toss_check';
-        }
-        
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CardDetailScreen(cardId: cardId),
+            builder: (context) => CardDetailScreen(cardId: recommendation.cardId),
           ),
         );
       },
@@ -308,12 +437,12 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: item['bgColor'],
+                    color: AppColors.primaryBlueLight,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: Center(
                     child: Text(
-                      item['emoji'],
+                      _getCategoryEmoji(place.category),
                       style: const TextStyle(fontSize: 28),
                     ),
                   ),
@@ -330,10 +459,12 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
                         children: [
                           Expanded(
                             child: Text(
-                              item['merchant'],
+                              place.name,
                               style: AppTypography.body1.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           Container(
@@ -355,7 +486,7 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
                                 ),
                                 const SizedBox(width: 2),
                                 Text(
-                                  '${item['distance']}m',
+                                  '${place.distance}m',
                                   style: AppTypography.caption.copyWith(
                                     fontSize: 11,
                                     color: AppColors.textSecondary,
@@ -370,7 +501,7 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
                       const SizedBox(height: 4),
                       
                       Text(
-                        item['category'],
+                        place.category,
                         style: AppTypography.caption.copyWith(
                           color: AppColors.textTertiary,
                         ),
@@ -395,15 +526,15 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
             Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: item['bgColor'],
+                color: AppColors.primaryBlueLight,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Row(
                 children: [
                   // 카드 이모지
-                  Text(
-                    item['cardEmoji'],
-                    style: const TextStyle(fontSize: 24),
+                  const Text(
+                    '💳',
+                    style: TextStyle(fontSize: 24),
                   ),
                   
                   const SizedBox(width: AppSpacing.sm),
@@ -413,28 +544,36 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item['cardName'],
+                          recommendation.cardName,
                           style: AppTypography.caption.copyWith(
                             color: AppColors.textSecondary,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
                         Row(
                           children: [
                             Text(
-                              item['benefit'],
+                              recommendation.benefitRate != null
+                                  ? '${(recommendation.benefitRate! * 100).toStringAsFixed(0)}% 할인'
+                                  : '${NumberFormat('#,###').format(recommendation.expectedBenefit)}원',
                               style: AppTypography.body1.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: item['accentColor'],
+                                color: AppColors.primaryBlue,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              item['benefitDetail'],
-                              style: AppTypography.caption.copyWith(
-                                color: AppColors.textTertiary,
+                            if (recommendation.conditions != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                recommendation.conditions!,
+                                style: AppTypography.caption.copyWith(
+                                  color: AppColors.textTertiary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
+                            ],
                           ],
                         ),
                       ],
@@ -460,3 +599,13 @@ class _LocationRecommendationScreenState extends State<LocationRecommendationScr
   }
 }
 
+// Place와 RecommendResponse를 함께 저장하는 클래스
+class PlaceWithRecommendation {
+  final Place place;
+  final RecommendResponse recommendation;
+
+  PlaceWithRecommendation({
+    required this.place,
+    required this.recommendation,
+  });
+}

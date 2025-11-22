@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -11,11 +12,17 @@ import '../../theme/spacing.dart';
 import '../../services/recommendation_service.dart';
 import '../../services/user_service.dart';
 import '../../services/card_service.dart';
+import '../../services/location_service.dart';
+import '../../services/place_service.dart';
+import '../../services/recommend_service.dart';
 import '../../models/user.dart';
 import '../../models/recommendation.dart';
 import '../../models/user_card.dart';
 import '../../models/performance.dart';
+import '../../models/place.dart';
+import '../../models/recommend.dart';
 import '../../services/performance_service.dart';
+import '../../widgets/location_recommendation_banner.dart';
 import '../profile/profile_screen.dart';
 import '../benefit_manage/benefit_manage_screen.dart';
 import '../card_manage/card_manage_screen.dart';
@@ -27,14 +34,17 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   final RecommendationService _recommendationService = RecommendationService();
   final UserService _userService = UserService();
   final CardService _cardService = CardService();
   final PerformanceService _performanceService = PerformanceService();
+  final LocationService _locationService = LocationService();
+  final PlaceService _placeService = PlaceService();
+  final RecommendService _recommendService = RecommendService();
   final PageController _cardPageController = PageController(viewportFraction: 0.92);
   
   User? _user;
@@ -46,17 +56,159 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _locationPermissionDenied = false;
   String _selectedBenefitType = 'discount';
   int _currentCardPage = 0;
+  
+  // 위치 기반 추천 관련
+  Position? _currentPosition;
+  Place? _selectedPlace;
+  RecommendResponse? _locationRecommendation;
+  StreamSubscription<Position>? _locationSubscription;
+  DateTime? _placeSelectionTime;
+  Place? _lastSelectedPlace;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _startLocationTracking();
   }
 
   @override
   void dispose() {
     _cardPageController.dispose();
+    _locationSubscription?.cancel();
     super.dispose();
+  }
+  
+  /// 위치 추적 시작
+  void _startLocationTracking() async {
+    bool hasPermission = await _locationService.requestPermission();
+    if (!hasPermission) {
+      if (mounted) {
+        setState(() {
+          _locationPermissionDenied = true;
+        });
+      }
+      return;
+    }
+    
+    // 위치 스트림 구독 (20-30초 간격)
+    _locationSubscription = _locationService.getLocationStream(
+      interval: const Duration(seconds: 25),
+    ).listen(
+      (position) {
+        if (mounted) {
+          _handleLocationUpdate(position);
+        }
+      },
+      onError: (error) {
+        print('위치 추적 오류: $error');
+      },
+    );
+  }
+  
+  /// 위치 업데이트 처리
+  void _handleLocationUpdate(Position position) async {
+    if (!mounted) return;
+    
+    setState(() {
+      _currentPosition = position;
+    });
+    
+    // 20초 이상 같은 장소에 머무르면 가맹점 선택
+    if (_placeSelectionTime == null ||
+        DateTime.now().difference(_placeSelectionTime!) > const Duration(seconds: 20)) {
+      await _selectNearestPlace(position);
+    } else if (_selectedPlace != null) {
+      // 같은 장소인지 확인 (20m 이내)
+      double distance = _locationService.calculateDistance(
+        position.latitude,
+        position.longitude,
+        _selectedPlace!.lat,
+        _selectedPlace!.lng,
+      );
+      
+      if (distance > 20) {
+        // 다른 장소로 이동한 경우
+        if (mounted) {
+          setState(() {
+            _selectedPlace = null;
+            _placeSelectionTime = null;
+            _lastSelectedPlace = null;
+            _locationRecommendation = null;
+          });
+        }
+      }
+    }
+  }
+  
+  /// 가장 가까운 가맹점 선택
+  Future<void> _selectNearestPlace(Position position) async {
+    try {
+      // 주변 가맹점 검색 (반경 120m)
+      List<Place> places = await _placeService.searchNearbyPlacesAll(
+        lat: position.latitude,
+        lng: position.longitude,
+        radius: 120,
+        sizePerCategory: 5,
+      );
+      
+      if (places.isEmpty) {
+        return;
+      }
+      
+      Place nearestPlace = places.first;
+      
+      // 이전에 선택한 장소와 같으면 무시
+      if (_lastSelectedPlace?.id == nearestPlace.id) {
+        return;
+      }
+      
+      if (mounted) {
+        setState(() {
+          _selectedPlace = nearestPlace;
+          _placeSelectionTime = DateTime.now();
+          _lastSelectedPlace = nearestPlace;
+        });
+      }
+      
+      // 혜택 추천 요청
+      await _requestRecommendation(nearestPlace);
+    } catch (e) {
+      print('가맹점 선택 실패: $e');
+    }
+  }
+  
+  /// 혜택 추천 요청
+  Future<void> _requestRecommendation(Place place) async {
+    try {
+      const userId = 'user_123';
+      List<String> userCardIds = _userCards.map((uc) => uc.cardId).toList();
+      
+      // 프리셋 금액 (5천/1만/2만)
+      int amount = 10000; // 기본 1만원
+      
+      List<RecommendResponse> recommendations = await _recommendService.getRecommendations(
+        userId: userId,
+        merchantCategory: place.category,
+        merchantName: place.name,
+        amount: amount,
+        timestamp: DateTime.now(),
+        userCards: userCardIds,
+      );
+      
+      if (recommendations.isNotEmpty && mounted) {
+        setState(() {
+          _locationRecommendation = recommendations.first;
+        });
+      }
+    } catch (e) {
+      print('혜택 추천 실패: $e');
+    }
+  }
+  
+  // 외부에서 호출할 수 있는 새로고침 메서드
+  void refresh() {
+    _loadData();
   }
 
   Future<void> _loadData() async {
@@ -79,9 +231,11 @@ class _HomeScreenState extends State<HomeScreen> {
             userCard.cardId,
             monthStr,
           );
-          setState(() {
-            _cardPerformances[userCard.cardId] = performance;
-          });
+          if (mounted) {
+            setState(() {
+              _cardPerformances[userCard.cardId] = performance;
+            });
+          }
         } catch (e) {
           // 실적 정보 로드 실패 시 무시
           print('실적 정보 로드 실패: $e');
@@ -90,9 +244,11 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       // 에러 처리
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -102,6 +258,56 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => const LocationRecommendationScreen(),
+      ),
+    );
+  }
+  
+  void _showLocationRecommendationDetail() {
+    if (_locationRecommendation == null || _selectedPlace == null) return;
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _selectedPlace!.name,
+              style: AppTypography.t2.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              _locationRecommendation!.cardName,
+              style: AppTypography.body1,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '예상 혜택: ${NumberFormat('#,###').format(_locationRecommendation!.expectedBenefit)}원',
+              style: AppTypography.body1.copyWith(
+                color: AppColors.success,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (_locationRecommendation!.conditions != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                _locationRecommendation!.conditions!,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+            SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+          ],
+        ),
       ),
     );
   }
@@ -219,8 +425,19 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
           
           // 위치 기반 추천 배너
-          _buildLocationRecommendationBanner(),
-          SizedBox(height: AppSpacing.md),
+          if (_locationRecommendation != null) ...[
+            LocationRecommendationBanner(
+              recommendation: _locationRecommendation!,
+              onTap: () {
+                // 배너 클릭 시 상세 정보 표시
+                _showLocationRecommendationDetail();
+              },
+            ),
+            SizedBox(height: AppSpacing.md),
+          ] else ...[
+            _buildLocationRecommendationBanner(),
+            SizedBox(height: AppSpacing.md),
+          ],
           
           // 카드 실적 슬라이더
           if (_userCards.isNotEmpty) ...[
@@ -521,31 +738,40 @@ class _HomeScreenState extends State<HomeScreen> {
       return _buildCardPerformanceCard();
     }
 
-    // 실적 데이터가 있는 카드만 필터링
+    // 모든 카드 표시 (실적이 없는 카드도 포함)
+    // 실적이 있는 카드와 없는 카드를 구분하여 표시
     final cardsWithPerformance = _userCards.where((uc) {
       final perf = _cardPerformances[uc.cardId];
       return perf != null && perf.summary.currentSpending > 0;
     }).toList();
+    
+    final cardsWithoutPerformance = _userCards.where((uc) {
+      final perf = _cardPerformances[uc.cardId];
+      return perf == null || perf.summary.currentSpending == 0;
+    }).toList();
 
-    if (cardsWithPerformance.isEmpty) {
+    // 모든 카드 목록 (실적이 있는 카드를 먼저, 그 다음 실적이 없는 카드)
+    final allCards = [...cardsWithPerformance, ...cardsWithoutPerformance];
+
+    if (allCards.isEmpty) {
       return AppComponents.emptyState(
         emoji: '💳',
-        title: '아직 이번 달 거래 내역이 없어요',
-        description: '카드를 사용하면 실적 정보가 표시됩니다.',
+        title: '등록된 카드가 없어요',
+        description: '카드를 추가하면 실적 정보가 표시됩니다.',
       ).animate().fadeIn(duration: 500.ms);
     }
 
     return Column(
       children: [
         // 카드 개수 표시
-        if (cardsWithPerformance.length > 1)
+        if (allCards.length > 1)
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.sm),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '${_currentCardPage + 1} / ${cardsWithPerformance.length}',
+                  '${_currentCardPage + 1} / ${allCards.length}',
                   style: AppTypography.caption.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -559,14 +785,14 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 250,
           child: PageView.builder(
             controller: _cardPageController,
-            itemCount: cardsWithPerformance.length,
+            itemCount: allCards.length,
             onPageChanged: (index) {
               setState(() {
                 _currentCardPage = index;
               });
             },
             itemBuilder: (context, index) {
-              final userCard = cardsWithPerformance[index];
+              final userCard = allCards[index];
               final performance = _cardPerformances[userCard.cardId];
               return Padding(
                 padding: const EdgeInsets.only(right: AppSpacing.sm),
@@ -577,7 +803,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         
         // 페이지 인디케이터 (점)
-        if (cardsWithPerformance.length > 1)
+        if (allCards.length > 1)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.md),
             child: Row(
@@ -676,25 +902,25 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        gradient: AppColors.cardGradient,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadowMedium,
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-            spreadRadius: 0,
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+            spreadRadius: -4,
           ),
           BoxShadow(
             color: AppColors.shadowLight,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
             spreadRadius: -2,
           ),
         ],
         border: Border.all(
           color: AppColors.grey100,
-          width: 1,
+          width: 1.5,
         ),
       ),
       child: Column(
@@ -714,30 +940,86 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Container(
-                width: 56,
-                height: 36,
+                width: 64,
+                height: 40,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppRadius.xs),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   boxShadow: [
                     BoxShadow(
+                      color: AppColors.primaryBlue.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                      spreadRadius: -1,
+                    ),
+                    BoxShadow(
                       color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
+                      blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
                   ],
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1.5,
+                  ),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppRadius.xs),
-                  child: Image.asset(
-                    '카드.png',
-                    fit: BoxFit.cover,
-                  ),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  child: userCard.card?.imageUrl != null && userCard.card!.imageUrl!.isNotEmpty
+                      ? Image.network(
+                          'http://127.0.0.1:8000${userCard.card!.imageUrl}',
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [AppColors.grey100, AppColors.grey200],
+                                ),
+                              ),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                gradient: AppColors.primaryGradient,
+                              ),
+                              child: Icon(
+                                Icons.credit_card,
+                                size: 24,
+                                color: Colors.white.withOpacity(0.7),
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            gradient: AppColors.primaryGradient,
+                          ),
+                          child: Icon(
+                            Icons.credit_card,
+                            size: 24,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                        ),
                 ),
               ),
             ],
           ),
           
-          SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.sm),
           
           // 실적 달성까지
           if (performance != null) ...[
@@ -745,16 +1027,25 @@ class _HomeScreenState extends State<HomeScreen> {
               '실적 달성까지',
               style: AppTypography.body2,
             ),
-            SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: AppSpacing.xs),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  '${NumberFormat('#,###').format(performance.summary.remainingAmount)}원 남았어요',
-                  style: AppTypography.t4.copyWith(
-                    color: AppColors.success,
-                    fontWeight: FontWeight.bold,
+                Flexible(
+                  child: Text(
+                    '${NumberFormat('#,###').format(performance.summary.remainingAmount)}원 남았어요',
+                    style: AppTypography.t4.copyWith(
+                      color: AppColors.success,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(
+                          color: AppColors.success.withOpacity(0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 if (tierInfo.isNotEmpty)
@@ -767,12 +1058,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             
-            SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.sm),
             
             // 프로그래스바
             _buildMiniProgressBar(performance.summary),
             
-            SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.sm),
             
             // 채운 실적
             Row(
@@ -782,17 +1073,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   size: 16,
                   color: AppColors.textSecondary,
                 ),
-                SizedBox(width: AppSpacing.xs),
-                Text(
-                  '채운 실적 ${NumberFormat('#,###').format(performance.summary.currentSpending)}원',
-                  style: AppTypography.body2.copyWith(
-                    color: AppColors.textSecondary,
+                const SizedBox(width: AppSpacing.xs),
+                Flexible(
+                  child: Text(
+                    '채운 실적 ${NumberFormat('#,###').format(performance.summary.currentSpending)}원',
+                    style: AppTypography.body2.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ],
             ),
             
-            SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.sm),
             
             // 하단 CTA - 실적 달성하면 받는 혜택 보기
             GestureDetector(
@@ -807,20 +1100,21 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
+                  vertical: AppSpacing.xs + 2,
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.badgeOrange,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('🎁', style: TextStyle(fontSize: 16)),
-                    SizedBox(width: AppSpacing.sm),
-                    Expanded(
+                    const Text('🎁', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: AppSpacing.xs),
+                    Flexible(
                       child: Text(
                         '실적 달성하면 받는 혜택 보기',
-                        style: AppTypography.body2.copyWith(
+                        style: AppTypography.t7.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),

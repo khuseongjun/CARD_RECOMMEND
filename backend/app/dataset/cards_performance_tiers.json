@@ -33,5 +33,82 @@
         "tier_label": "2구간",
         "min_amount": 300000,
         "max_amount": null
+    },
+    {
+        "card_id": "10216",
+        "tier_code": "T1",
+        "tier_label": "1구간",
+        "min_amount": 100000,
+        "max_amount": 399999
+    },
+    {
+        "card_id": "10216",
+        "tier_code": "T2",
+        "tier_label": "2구간",
+        "min_amount": 400000,
+        "max_amount": null
+    },
+    {
+        "card_id": "toss_shinhan_mrlife",
+        "tier_code": "T1",
+        "tier_label": "1구간",
+        "min_amount": 300000,
+        "max_amount": 499999
+    },
+    {
+        "card_id": "toss_shinhan_mrlife",
+        "tier_code": "T2",
+        "tier_label": "2구간",
+        "min_amount": 500000,
+        "max_amount": 999999
+    },
+    {
+        "card_id": "toss_shinhan_mrlife",
+        "tier_code": "T3",
+        "tier_label": "3구간",
+        "min_amount": 1000000,
+        "max_amount": null
+    },
+    {
+        "card_id": "kb_youth_tt",
+        "tier_code": "T1",
+        "tier_label": "1구간",
+        "min_amount": 200000,
+        "max_amount": null
+    },
+    {
+        "card_id": "toss_likitall",
+        "tier_code": "T1",
+        "tier_label": "1구간",
+        "min_amount": 0,
+        "max_amount": null
+    },
+    {
+        "card_id": "toss_samsung",
+        "tier_code": "T1",
+        "tier_label": "1구간",
+        "min_amount": 250000,
+        "max_amount": null
+    },
+    {
+        "card_id": "hana_club_sk",
+        "tier_code": "T1",
+        "tier_label": "1구간",
+        "min_amount": 300000,
+        "max_amount": null
+    },
+    {
+        "card_id": "hyundai_m",
+        "tier_code": "T1",
+        "tier_label": "1구간",
+        "min_amount": 200000,
+        "max_amount": null
+    },
+    {
+        "card_id": "card_shopping",
+        "tier_code": "T1",
+        "tier_label": "1구간",
+        "min_amount": 300000,
+        "max_amount": null
     }
 ]

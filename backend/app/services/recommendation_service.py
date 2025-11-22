@@ -35,6 +35,7 @@ def get_current_location_recommendation(
     best_card = None
     best_benefit = 0
     best_benefit_desc = ""
+    best_adjusted_score = 0  # 우선순위 가중치를 적용한 점수 (비교용)
     
     # 가정 결제 금액
     assumed_amount = 10000
@@ -60,15 +61,16 @@ def get_current_location_recommendation(
             else:
                 expected_benefit = 0
             
-            # 선호 혜택 타입 우선순위
+            # 선호 혜택 타입 우선순위 계산
             priority = 1.0
             if preferred_benefit_type and benefit.benefit_type == preferred_benefit_type:
-                priority = 1.5
+                priority = 1.5  # 선호 타입이면 1.5배 가중치
             
-            adjusted_benefit = expected_benefit * priority
-            
-            if adjusted_benefit > best_benefit:
-                best_benefit = expected_benefit
+            # 비교는 가중치를 적용한 점수로, 저장은 실제 혜택 금액으로
+            adjusted_score = expected_benefit * priority
+            if adjusted_score > best_adjusted_score:
+                best_adjusted_score = adjusted_score
+                best_benefit = expected_benefit  # 실제 혜택 금액 저장
                 best_card = card
                 best_benefit_desc = benefit.short_description or benefit.title
     

@@ -12,7 +12,7 @@
         "annual_fee_domestic": 12000,
         "annual_fee_international": 12000,
         "min_monthly_spending": 300000,
-        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/WR/10344/WR_10344_20240402-103053_ver.png"
+        "image_url": "/dataset/card_image/카드의정석_Shopping.png"
     },
     {
         "id": "1408",
@@ -27,7 +27,7 @@
         "annual_fee_domestic": 15000,
         "annual_fee_international": 18000,
         "min_monthly_spending": 300000,
-        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/SH/1408/SH_1408_20230213-143750_ver.png"
+        "image_url": "/dataset/card_image/토스_신한MR.LIFE.png"
     },
     {
         "id": "10216",
@@ -42,7 +42,7 @@
         "annual_fee_domestic": 15000,
         "annual_fee_international": 15000,
         "min_monthly_spending": 400000,
-        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/KB/10216/KB_10216_20250801-081714_ver.png"
+        "image_url": "/dataset/card_image/KB_청춘대로톡톡카드.png"
     },
     {
         "id": "1530",
@@ -57,7 +57,7 @@
         "annual_fee_domestic": 10000,
         "annual_fee_international": 10000,
         "min_monthly_spending": 300000,
-        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/SS/1530/SS_1530_20241101-100614_ver.png"
+        "image_url": "/dataset/card_image/삼성카드_taptapO.png"
     },
     {
         "id": "115",
@@ -72,7 +72,7 @@
         "annual_fee_domestic": 5000,
         "annual_fee_international": 10000,
         "min_monthly_spending": 300000,
-        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/KB/115/KB_115_20230125-142026_hor.png"
+        "image_url": "/dataset/card_image/KB_굿데이카드.png"
     },
     {
         "id": "10343",
@@ -87,6 +87,111 @@
         "annual_fee_domestic": 20000,
         "annual_fee_international": 20000,
         "min_monthly_spending": 500000,
-        "image_url": "https://vertical.pstatic.net/vertical-cardad/creatives/SS/10343/SS_10343_20240329-110153_ver.png"
+        "image_url": "/dataset/card_image/토스_삼성카드.png"
+    },
+    {
+        "id": "toss_shinhan_mrlife",
+        "name": "토스 신한카드 Mr.Life",
+        "issuer": "토스",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 15000,
+        "annual_fee_international": 18000,
+        "min_monthly_spending": 300000,
+        "image_url": "/dataset/card_image/토스_신한MR.LIFE.png"
+    },
+    {
+        "id": "kb_youth_tt",
+        "name": "KB 청춘대로톡톡카드",
+        "issuer": "KB국민",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 10000,
+        "annual_fee_international": 10000,
+        "min_monthly_spending": 200000,
+        "image_url": "/dataset/card_image/KB_청춘대로톡톡카드.png"
+    },
+    {
+        "id": "toss_likitall",
+        "name": "토스 LIKITALL",
+        "issuer": "토스",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 0,
+        "annual_fee_international": 0,
+        "min_monthly_spending": 0,
+        "image_url": "/dataset/card_image/토스_LIKITALL.png"
+    },
+    {
+        "id": "toss_samsung",
+        "name": "토스 삼성카드",
+        "issuer": "토스",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 12000,
+        "annual_fee_international": 12000,
+        "min_monthly_spending": 250000,
+        "image_url": "/dataset/card_image/토스_삼성카드.png"
+    },
+    {
+        "id": "hana_club_sk",
+        "name": "하나 클럽SK카드",
+        "issuer": "하나",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 15000,
+        "annual_fee_international": 15000,
+        "min_monthly_spending": 300000,
+        "image_url": "/dataset/card_image/하나_클럽SK카드.png"
+    },
+    {
+        "id": "hyundai_m",
+        "name": "현대카드 M",
+        "issuer": "현대",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 10000,
+        "annual_fee_international": 10000,
+        "min_monthly_spending": 200000,
+        "image_url": "/dataset/card_image/현대카드 M.png"
+    },
+    {
+        "id": "card_shopping",
+        "name": "카드의정석 Shopping",
+        "issuer": "우리",
+        "card_type": [
+            "credit"
+        ],
+        "benefit_types": [
+            "discount"
+        ],
+        "annual_fee_domestic": 10000,
+        "annual_fee_international": 10000,
+        "min_monthly_spending": 300000,
+        "image_url": "/dataset/card_image/카드의정석_Shopping.png"
     }
 ]
