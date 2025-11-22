@@ -44,8 +44,12 @@ def init_database():
             cards_data = json.load(f)
         
         for card_data in cards_data:
-            if not db.query(CardProduct).filter(CardProduct.id == card_data["id"]).first():
+            existing_card = db.query(CardProduct).filter(CardProduct.id == card_data["id"]).first()
+            if not existing_card:
                 db.add(CardProduct(**card_data))
+            else:
+                for key, value in card_data.items():
+                    setattr(existing_card, key, value)
         db.commit()
         
         # ===== 카드 혜택 삽입 =====

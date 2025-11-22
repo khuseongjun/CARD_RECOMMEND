@@ -2,7 +2,7 @@ from dataProcess import init_data
 import json
 import os
 
-cardID = [10344, 1408] # [10344, 1408, 10216, 1530, 115, 10343]
+cardID = [10344, 1408, 10216, 1530, 115, 10343]
 cards_data = []
 cards_raw_benefitsdata = []
 
