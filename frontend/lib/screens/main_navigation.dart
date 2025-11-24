@@ -7,6 +7,7 @@ import 'home/home_screen.dart';
 import 'card_manage/card_manage_screen.dart';
 import 'benefit_manage/benefit_manage_screen.dart';
 import 'badge_manage/badge_manage_screen.dart';
+import 'auto_pay_screen.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -75,8 +76,9 @@ class _MainNavigationState extends State<MainNavigation> {
               children: [
                 _buildNavItem(0, Icons.home_outlined, Icons.home, '홈'),
                 _buildNavItem(1, Icons.credit_card_outlined, Icons.credit_card, '카드'),
-                _buildNavItem(2, Icons.local_offer_outlined, Icons.local_offer, '혜택'),
-                _buildNavItem(3, Icons.emoji_events_outlined, Icons.emoji_events, '뱃지'),
+                _buildNavItem(2, Icons.qr_code_scanner, Icons.qr_code_scanner, '결제'),
+                _buildNavItem(3, Icons.local_offer_outlined, Icons.local_offer, '혜택'),
+                _buildNavItem(4, Icons.emoji_events_outlined, Icons.emoji_events, '뱃지'),
               ],
             ),
           ),
@@ -86,16 +88,48 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label) {
-    final isSelected = _currentIndex == index;
+    // 현재 선택된 화면 인덱스를 기준으로 탭 활성화 상태 판단
+    // 0(홈), 1(카드) -> 그대로
+    // 2(결제) -> 선택 안됨 (Action)
+    // 3(혜택) -> 화면인덱스 2
+    // 4(뱃지) -> 화면인덱스 3
+    
+    bool isSelected = false;
+    if (index < 2) {
+      isSelected = _currentIndex == index;
+    } else if (index > 2) {
+      isSelected = _currentIndex == index - 1;
+    }
     
     return GestureDetector(
       onTap: () {
+        // 결제 탭(index 2)은 화면 전환이 아닌 모달/페이지 이동으로 처리
+        if (index == 2) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AutoPayScreen()),
+          );
+          return;
+        }
+
         if (_currentIndex != index) {
+          // 인덱스 조정 (결제 탭이 2번이므로, 그 이후 탭들의 인덱스를 맞춰줌)
+          // _screens 리스트는 4개이므로, 탭 인덱스와 매핑이 필요함
+          // 0: 홈 -> 0
+          // 1: 카드 -> 1
+          // 2: 결제 -> (Action)
+          // 3: 혜택 -> 2
+          // 4: 뱃지 -> 3
+          
+          int screenIndex = index;
+          if (index > 2) screenIndex = index - 1;
+
           setState(() {
-            _currentIndex = index;
+            _currentIndex = screenIndex;
           });
+          
           // 홈 화면으로 돌아올 때 새로고침
-          if (index == 0 && _homeScreenKey.currentState != null) {
+          if (screenIndex == 0 && _homeScreenKey.currentState != null) {
             _homeScreenKey.currentState!.refresh();
           }
         }

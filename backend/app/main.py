@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.database import engine, Base
-from app.routers import users, cards, user_cards, benefits, recommendations, performance, badges, places, recommend
+from app.routers import users, cards, user_cards, benefits, recommendations, performance, badges, places, recommend, auto_pay
 import os
 
 # 데이터베이스 테이블 생성
@@ -38,6 +38,7 @@ app.include_router(performance.router)
 app.include_router(badges.router)
 app.include_router(places.router)
 app.include_router(recommend.router)
+app.include_router(auto_pay.router)
 
 @app.get("/")
 def root():
